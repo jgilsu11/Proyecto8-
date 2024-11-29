@@ -415,7 +415,7 @@ class Desbalanceo:
         y = self.dataframe[self.variable_dependiente]
 
         smotenc = SMOTENC(random_state=42, categorical_features=columnas_categoricas__encoded)
-        X_resampled, y_resampled = smote.fit_resample(X, y)
+        X_resampled, y_resampled = smotenc.fit_resample(X, y)
         
         df_resampled = pd.concat([pd.DataFrame(X_resampled, columns=X.columns), pd.Series(y_resampled, name=self.variable_dependiente)], axis=1)
         return df_resampled
