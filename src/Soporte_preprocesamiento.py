@@ -303,9 +303,40 @@ def detectar_orden_cat(df,lista_cat,var_respuesta):
         else:
             print(f"La variable {categoria} NO tiene orden")
 
+#PLOT DE OUTLIERS (ESTANDARIZACION)
+
+def visualizar_outliers_box(df, columnas_num):
+    fig , axes = plt.subplots(nrows=8, ncols=5, figsize = (15, 20) )
+    axes=axes.flat
+    for index,col in enumerate(columnas_num,start=0):
+
+        sns.boxplot(x = col, data = df, ax = axes[index])
+        
+        
+    plt.tight_layout()
 
 
-    
+## OUTLIERS
+
+def identificar_outliers_iqr(df, k=1.5):
+    df_num=df.select_dtypes(include=np.number)
+    dicc_outliers={}
+    for columna in df_num.columns:
+        Q1, Q3= np.nanpercentile(df[columna], (25, 75))
+        iqr= Q3 - Q1
+        limite_superior= Q3 + (iqr * k)
+        limite_inferior= Q1 - (iqr * k)
+
+        condicion_sup= df[columna] > limite_superior
+        condicion_inf= df[columna] < limite_inferior
+        df_outliers= df[condicion_inf | condicion_sup]
+        print(f"La columna {columna.upper()} tiene {df_outliers.shape[0]} outliers")
+        if not df_outliers.empty:
+            dicc_outliers[columna]= df_outliers
+
+    return dicc_outliers    
+
+
 #DESBALANCES
 
 class Desbalanceo:
