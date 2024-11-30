@@ -306,7 +306,7 @@ def detectar_orden_cat(df,lista_cat,var_respuesta):
 #PLOT DE OUTLIERS (ESTANDARIZACION)
 
 def visualizar_outliers_box(df, columnas_num):
-    fig , axes = plt.subplots(nrows=8, ncols=5, figsize = (15, 20) )
+    fig , axes = plt.subplots(nrows=8, ncols=8, figsize = (15, 20) )
     axes=axes.flat
     for index,col in enumerate(columnas_num,start=0):
 
@@ -420,6 +420,24 @@ class Desbalanceo:
         df_resampled = pd.concat([pd.DataFrame(X_resampled, columns=X.columns), pd.Series(y_resampled, name=self.variable_dependiente)], axis=1)
         return df_resampled
 
+    def balancear_clases_tomek(self):
+        """
+        Aplica el método de Tomek Links para balancear clases eliminando pares cercanos
+        entre la clase mayoritaria y la minoritaria.
+        
+        Returns:
+            pd.DataFrame: DataFrame balanceado tras aplicar Tomek Links.
+        """
+        X = self.dataframe.drop(columns=[self.variable_dependiente])
+        y = self.dataframe[self.variable_dependiente]
+
+        tomek = TomekLinks()
+        X_resampled, y_resampled = tomek.fit_resample(X, y)
+        df_resampled = pd.concat([pd.DataFrame(X_resampled, columns=X.columns), 
+                                pd.Series(y_resampled, name=self.variable_dependiente)], axis=1)
+
+        return df_resampled
+
 
     def balancear_clases_smote_tomek(self):
         X = self.dataframe.drop(columns=[self.variable_dependiente])
@@ -430,6 +448,7 @@ class Desbalanceo:
         
         df_resampled = pd.concat([pd.DataFrame(X_resampled, columns=X.columns), pd.Series(y_resampled, name=self.variable_dependiente)], axis=1)
         return df_resampled
+    
 
 
 ## CALCULAR MÉTRICAS DE CLASIFICACIÓN

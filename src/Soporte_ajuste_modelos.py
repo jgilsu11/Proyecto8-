@@ -27,6 +27,7 @@ from sklearn.metrics import (
     confusion_matrix
 )
 import xgboost as xgb
+from sklearn.svm import SVC
 import pickle
 
 # Para realizar cross validation
@@ -55,7 +56,8 @@ class AnalisisModelosClasificacion:
             "tree": DecisionTreeClassifier(random_state=42),
             "random_forest": RandomForestClassifier(random_state=42),
             "gradient_boosting": GradientBoostingClassifier(random_state=42),
-            "xgboost": xgb.XGBClassifier(random_state=42)
+            "xgboost": xgb.XGBClassifier(random_state=42),
+            "svc": SVC(random_state=42)
         }
         self.resultados = {nombre: {"mejor_modelo": None, "pred_train": None, "pred_test": None} for nombre in self.modelos}
 
@@ -292,7 +294,7 @@ class AnalisisModelosClasificacion:
             raise ValueError(f"Debe ajustar el modelo '{modelo_nombre}' antes de generar el SHAP plot.")
 
         # Usar TreeExplainer para modelos basados en árboles
-        if modelo_nombre in ["tree", "random_forest", "gradient_boosting", "xgboost"]:
+        if modelo_nombre in ["tree", "random_forest", "gradient_boosting", "xgboost", "svc"]:
             explainer = shap.TreeExplainer(modelo)
             shap_values = explainer.shap_values(self.X_test)
 
@@ -304,11 +306,10 @@ class AnalisisModelosClasificacion:
                 # Para Decision Trees, seleccionar SHAP values de la clase positiva
                 shap_values = shap_values[:, :, 1]
         else:
-            # Usar el explicador genérico para otros modelos
-            explainer = shap.Explainer(modelo, self.X_test, check_additivity=False)
-            shap_values = explainer(self.X_test).values
-
-        # Generar el summary plot estándar
+            # Usar KernelExplainer para otros modelos como SVC
+            explainer = shap.KernelExplainer(modelo.predict_proba, self.X_test)
+            shap_values = explainer.shap_values(self.X_test)
+            # Generar el summary plot estándar
         shap.summary_plot(shap_values, self.X_test, feature_names=self.X.columns)
 
 # Función para asignar colores
@@ -316,16 +317,19 @@ def color_filas_por_modelo(row):
     if row["modelo"] == "decision tree":
         return ["background-color: #e6b3e0; color: black"] * len(row)  
     
-    elif row["modelo"] == "random_forest":
+    elif row["modelo"] == "random forest":
         return ["background-color: #c2f0c2; color: black"] * len(row) 
 
-    elif row["modelo"] == "gradient_boosting":
+    elif row["modelo"] == "gradient":
         return ["background-color: #ffd9b3; color: black"] * len(row)  
 
     elif row["modelo"] == "xgboost":
         return ["background-color: #f7b3c2; color: black"] * len(row)  
 
-    elif row["modelo"] == "regresion lineal":
-        return ["background-color: #b3d1ff; color: black"] * len(row)  
+    elif row["modelo"] == "logistica":
+        return ["background-color: #b3d1ff; color: black"] * len(row) 
+     
+    elif row["modelo"] == "svc":
+        return ["background-color: #dbdcff; color: black"] * len(row)
     
     return ["color: black"] * len(row)
