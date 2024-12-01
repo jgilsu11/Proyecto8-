@@ -191,7 +191,31 @@ class Visualizador:
 
 
     def plot_relacion(self, vr, tamano_grafica=(20, 10), tamanio_fuente=18):
+        """
+        Genera gráficos que muestran la relación entre cada columna del DataFrame y una variable de referencia (vr).
+        Los gráficos son adaptativos según el tipo de dato: histogramas para variables numéricas y countplots para categóricas.
 
+        Parámetros:
+        -----------
+        vr : str
+            Nombre de la columna que actúa como la variable de referencia para las relaciones.
+        tamano_grafica : tuple, opcional
+            Tamaño de la figura en el formato (ancho, alto). Por defecto es (20, 10).
+        tamanio_fuente : int, opcional
+            Tamaño de la fuente para los títulos de los gráficos. Por defecto es 18.
+
+        Retorno:
+        --------
+        None
+            Muestra una serie de subgráficos con las relaciones entre la variable de referencia y el resto de columnas del DataFrame.
+
+        Notas:
+        ------
+        - La función asume que el DataFrame de interés está definido dentro de la clase como `self.dataframe`.
+        - Se utiliza `self.separar_dataframes()` para obtener las columnas numéricas y categóricas en listas separadas.
+        - La variable de referencia (`vr`) no será graficada contra sí misma.
+        - Los gráficos utilizan la paleta "magma" para la diferenciación de categorías o valores de la variable de referencia.
+        """
 
         lista_num = self.separar_dataframes()[0].columns
         lista_cat = self.separar_dataframes()[1].columns
@@ -291,6 +315,31 @@ class Visualizador:
 #ORDEN (ENCODING)
 
 def detectar_orden_cat(df,lista_cat,var_respuesta):
+    """
+    Evalúa si las variables categóricas de una lista presentan un orden significativo en relación con una variable de respuesta,
+    utilizando el test de Chi-cuadrado.
+
+    Parámetros:
+    -----------
+    df : pandas.DataFrame
+        DataFrame que contiene las variables categóricas y la variable de respuesta.
+    lista_cat : list
+        Lista con los nombres de las columnas categóricas que se evaluarán.
+    var_respuesta : str
+        Nombre de la columna que actúa como la variable de respuesta.
+
+    Retorno:
+    --------
+    None
+        La función imprime:
+        - Una tabla cruzada entre cada variable categórica y la variable de respuesta.
+        - Un mensaje indicando si la variable categórica tiene un orden significativo en relación con la variable de respuesta.
+
+    Notas:
+    ------
+    - El orden se evalúa mediante el p-value del test de Chi-cuadrado. Si `p < 0.05`, se concluye que la variable categórica tiene orden.
+    - Se muestra cada tabla cruzada usando `display`, lo que es útil en entornos como Jupyter Notebook.
+    """
     for categoria in lista_cat:
         print(f"Estamos evaluando el orden de la variable {categoria.upper()}")
         df_cross_tab=pd.crosstab(df[categoria], df[var_respuesta])
@@ -306,6 +355,28 @@ def detectar_orden_cat(df,lista_cat,var_respuesta):
 #PLOT DE OUTLIERS (ESTANDARIZACION)
 
 def visualizar_outliers_box(df, columnas_num):
+    """
+    Visualiza los outliers en un conjunto de columnas numéricas de un DataFrame utilizando diagramas de caja (boxplots).
+
+    Parámetros:
+    -----------
+    df : pandas.DataFrame
+        DataFrame que contiene las columnas numéricas a analizar.
+    columnas_num : list
+        Lista de nombres de las columnas numéricas que se desean visualizar.
+
+    Retorno:
+    --------
+    None
+        La función genera una figura con subgráficos (boxplots) para cada columna numérica de la lista. 
+        Cada gráfico muestra la distribución y posibles outliers de la columna correspondiente.
+
+    Notas:
+    ------
+    - La figura tiene un máximo de 64 subgráficos (8 filas x 8 columnas).
+    - Si la lista de columnas excede las 64 columnas, algunos gráficos no serán representados.
+    - El tamaño del gráfico total es ajustado automáticamente con `plt.tight_layout()` para evitar superposiciones.
+    """
     fig , axes = plt.subplots(nrows=8, ncols=8, figsize = (15, 20) )
     axes=axes.flat
     for index,col in enumerate(columnas_num,start=0):
@@ -319,6 +390,47 @@ def visualizar_outliers_box(df, columnas_num):
 ## OUTLIERS
 
 def identificar_outliers_iqr(df, k=1.5):
+    """
+    Identifica outliers en un DataFrame utilizando el método del rango intercuartílico (IQR).
+
+    Parámetros:
+    -----------
+    df : pandas.DataFrame
+        DataFrame que contiene los datos para identificar outliers. Solo se analizarán las columnas numéricas.
+    k : float, opcional
+        Factor multiplicador para determinar los límites superior e inferior. 
+        El valor predeterminado es 1.5, que es el estándar común para identificar outliers.
+
+    Retorno:
+    --------
+    dicc_outliers : dict
+        Diccionario donde las claves son los nombres de las columnas con outliers y los valores son 
+        DataFrames que contienen las filas correspondientes a los outliers de esa columna.
+
+    Efectos secundarios:
+    ---------------------
+    - Imprime la cantidad de outliers detectados en cada columna numérica.
+    
+    Notas:
+    ------
+    - El método utiliza el rango intercuartílico para calcular los límites:
+        * Límite superior = Q3 + (IQR * k)
+        * Límite inferior = Q1 - (IQR * k)
+      Donde Q1 y Q3 son los percentiles 25 y 75, respectivamente.
+    - Las columnas no numéricas son ignoradas.
+    - Si una columna no contiene outliers, no se incluirá en el diccionario de retorno.
+    - Los valores NaN en las columnas no son considerados para el cálculo del IQR.
+
+    Ejemplo:
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3, 100], 'B': [5, 6, 7, 8]})
+    >>> outliers = identificar_outliers_iqr(df)
+    La columna A tiene 1 outliers
+    La columna B tiene 0 outliers
+    >>> print(outliers)
+    {'A':     A  B
+           3  100  8}
+    """
     df_num=df.select_dtypes(include=np.number)
     dicc_outliers={}
     for columna in df_num.columns:
@@ -340,11 +452,58 @@ def identificar_outliers_iqr(df, k=1.5):
 #DESBALANCES
 
 class Desbalanceo:
+    """
+    Clase para manejar problemas de desbalanceo en conjuntos de datos.
+
+    Atributos:
+    ----------
+    dataframe : pandas.DataFrame
+        Conjunto de datos con las clases desbalanceadas.
+    variable_dependiente : str
+        Nombre de la variable objetivo que contiene las clases a balancear.
+
+    Métodos:
+    --------
+    visualizar_clase(color="orange", edgecolor="black"):
+        Genera un gráfico de barras para visualizar la distribución de clases.
+    balancear_clases_pandas(metodo):
+        Balancea las clases utilizando técnicas de sobremuestreo o submuestreo con pandas.
+    balancear_clases_imblearn(metodo):
+        Balancea las clases utilizando RandomOverSampler o RandomUnderSampler de imbalanced-learn.
+    balancear_clases_smote():
+        Aplica el método SMOTE para generar nuevas muestras de la clase minoritaria.
+    balancear_clase_smotenc(columnas_categoricas__encoded, sampling_strategy="auto"):
+        Aplica SMOTENC para balancear clases en datos que contienen columnas categóricas codificadas.
+    balancear_clases_tomek(sampling_strategy="auto"):
+        Aplica el método Tomek Links para eliminar pares cercanos entre clases.
+    balancear_clases_smote_tomek():
+        Aplica SMOTE combinado con Tomek Links para balancear las clases.
+    """
     def __init__(self, dataframe, variable_dependiente):
         self.dataframe = dataframe
         self.variable_dependiente = variable_dependiente
 
     def visualizar_clase(self, color="orange", edgecolor="black"):
+        """
+        Visualiza la distribución de clases de la variable dependiente.
+
+        Parámetros:
+        -----------
+        color : str, opcional
+            Color de las barras del gráfico. Por defecto, "orange".
+        edgecolor : str, opcional
+            Color del borde de las barras. Por defecto, "black".
+
+        Retorna:
+        --------
+        None
+            Muestra un gráfico de barras que representa la distribución de clases de la variable dependiente.
+
+        Ejemplo:
+        --------
+        >>> desbalanceo = Desbalanceo(dataframe, "target")
+        >>> desbalanceo.visualizar_clase()
+        """
         plt.figure(figsize=(8, 5))  # para cambiar el tamaño de la figura
         fig = sns.countplot(data=self.dataframe, 
                             x=self.variable_dependiente,  
@@ -354,6 +513,31 @@ class Desbalanceo:
         plt.show()
 
     def balancear_clases_pandas(self, metodo):
+        """
+        Balancea las clases utilizando técnicas de sobremuestreo o submuestreo con pandas.
+
+        Parámetros:
+        -----------
+        metodo : str
+            Método de balanceo a utilizar. Puede ser:
+            - "downsampling": Reduce el número de muestras de la clase mayoritaria.
+            - "upsampling": Incrementa el número de muestras de la clase minoritaria.
+
+        Retorna:
+        --------
+        pd.DataFrame
+            DataFrame con las clases balanceadas.
+
+        Lanza:
+        -------
+        ValueError
+            Si el método proporcionado no es "downsampling" o "upsampling".
+
+        Ejemplo:
+        --------
+        >>> desbalanceo = Desbalanceo(dataframe, "target")
+        >>> df_balanceado = desbalanceo.balancear_clases_pandas("downsampling")
+        """
 
         # Contar las muestras por clase
         contar_clases = self.dataframe[self.variable_dependiente].value_counts()
@@ -382,6 +566,32 @@ class Desbalanceo:
         return df_balanced
 
     def balancear_clases_imblearn(self, metodo):
+        """
+        Balancea las clases utilizando las técnicas RandomOverSampler o RandomUnderSampler 
+        de la biblioteca imbalanced-learn.
+
+        Parámetros:
+        -----------
+        metodo : str
+            Método de balanceo a utilizar. Puede ser:
+            - "RandomOverSampler": Sobremuestreo aleatorio de la clase minoritaria.
+            - "RandomUnderSampler": Submuestreo aleatorio de la clase mayoritaria.
+
+        Retorna:
+        --------
+        pd.DataFrame
+            DataFrame con las clases balanceadas.
+
+        Lanza:
+        -------
+        ValueError
+            Si el método proporcionado no es "RandomOverSampler" o "RandomUnderSampler".
+
+        Ejemplo:
+        --------
+        >>> desbalanceo = Desbalanceo(dataframe, "target")
+        >>> df_balanceado = desbalanceo.balancear_clases_imblearn("RandomOverSampler")
+        """
 
         X = self.dataframe.drop(columns=[self.variable_dependiente])
         y = self.dataframe[self.variable_dependiente]
@@ -401,6 +611,20 @@ class Desbalanceo:
         return df_resampled
     
     def balancear_clases_smote(self):
+        """
+        Aplica el método SMOTE (Synthetic Minority Oversampling Technique) para balancear clases 
+        generando nuevas muestras sintéticas para la clase minoritaria.
+
+        Returns:
+        --------
+        pd.DataFrame
+            DataFrame balanceado con las nuevas muestras generadas por SMOTE.
+
+        Notas:
+        ------
+        - Este método es útil cuando la clase minoritaria tiene muy pocas muestras.
+        - SMOTE genera muestras sintéticas interpolando entre los puntos de la clase minoritaria.
+        """
         X = self.dataframe.drop(columns=[self.variable_dependiente])
         y = self.dataframe[self.variable_dependiente]
 
@@ -411,6 +635,26 @@ class Desbalanceo:
         return df_resampled
 
     def balancear_clase_smotenc(self, columnas_categoricas__encoded,sampling_strategy="auto"):
+        """
+        Balancea las clases utilizando el método SMOTENC, diseñado para trabajar con variables categóricas.
+
+        Parámetros:
+        -----------
+        columnas_categoricas_encoded : list
+            Lista de índices que indican cuáles columnas son categóricas (previamente codificadas).
+        sampling_strategy : str o float, opcional
+            Estrategia de muestreo, por defecto "auto".
+
+        Retorna:
+        --------
+        pd.DataFrame
+            DataFrame con las clases balanceadas usando SMOTENC.
+
+        Ejemplo:
+        --------
+        >>> desbalanceo = Desbalanceo(dataframe, "target")
+        >>> df_balanceado = desbalanceo.balancear_clase_smotenc([0, 1], sampling_strategy="minority")
+        """
         X = self.dataframe.drop(columns=[self.variable_dependiente])
         y = self.dataframe[self.variable_dependiente]
 
@@ -440,6 +684,19 @@ class Desbalanceo:
 
 
     def balancear_clases_smote_tomek(self):
+        """
+        Balancea las clases utilizando una combinación de SMOTE y Tomek Links para manejar el desbalanceo.
+
+        Retorna:
+        --------
+        pd.DataFrame
+            DataFrame con las clases balanceadas utilizando SMOTETomek.
+
+        Ejemplo:
+        --------
+        >>> desbalanceo = Desbalanceo(dataframe, "target")
+        >>> df_balanceado = desbalanceo.balancear_clases_smote_tomek()
+        """
         X = self.dataframe.drop(columns=[self.variable_dependiente])
         y = self.dataframe[self.variable_dependiente]
 

@@ -314,6 +314,19 @@ class AnalisisModelosClasificacion:
 
 # Función para asignar colores
 def color_filas_por_modelo(row):
+    """
+    Aplica colores de fondo a las filas de un DataFrame en función del valor de la columna 'modelo'.
+    
+    Parámetros:
+    -----------
+    row : pd.Series
+        Fila del DataFrame a la que se le aplicará el formato de color basado en el modelo.
+
+    Retorna:
+    --------
+    list
+        Lista de estilos CSS que se aplican a cada celda de la fila.
+    """
     if row["modelo"] == "decision tree":
         return ["background-color: #e6b3e0; color: black"] * len(row)  
     
