@@ -7,140 +7,106 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 
 st.set_page_config(
-    page_title="Predicción de Alquiler de Casas",
-    page_icon="🏠",
+    page_title="Predicción de la probabilidad de partida de un empleado",
+    page_icon="📠",
     layout="centered",
 )
 
 # Título y descripción
-st.title("🏠 Predicción de Alquiler de Casas")
-st.write("Usa esta aplicación para predecir el precio de alquiler de una casa en Madrid basándote en sus características.")
+st.title("📠 Predicción de la probabilidad de partida de un empleado")
+st.write("Usa esta aplicación para predecir la probabilidad de partida de un empleado de tu empresa basandote en sus respuestas a encuestas y características demográficas.")
 
 # Mostrar una imagen
 st.image(
-    "C:\\Users\\jaime\\Desktop\\proyectos\\Proyecto 7\\Proyecto7-PrediccionCasas\\Imagen\\imagen alquiler.webp",  # URL de la imagen
-    caption="Tu próximo alquiler está aquí.",
+    "C:\\Users\\jaime\\Desktop\\proyectos\\Proyecto 8\\Proyecto8-Predicci-n-de-Retenci-n-de-Empleados\\Imagen\\imagen_oficina.webp",  # URL de la imagen
+    caption="Retén a tus empleados.",
     use_column_width=True,
 )
 
 
 # Cargar los modelos y transformadores entrenados
 def load_models():
-    with open('transformers/one_hot_encoder.pkl', 'rb') as f:
+    with open('transformers/preprocesamiento3/one_hot_encoder.pkl', 'rb') as f:
         one_hot = pickle.load(f)    
-    with open('transformers/target_encoder.pkl', 'rb') as t:
+    with open('transformers/preprocesamiento3/target_encoder.pkl', 'rb') as t:
         target_encoder = pickle.load(t)
-    with open('transformers/scaler.pkl', 'rb') as s:
+    with open('transformers/preprocesamiento3/scaler.pkl', 'rb') as s:
         scaler = pickle.load(s)
-    with open('transformers/random_forest_model.pkl', 'rb') as r:
-        model = pickle.load(r)
+    with open('transformers/modelos3/MODELO_DEFINITIVO.pkl', 'rb') as l:
+        model = pickle.load(l)
     return one_hot,target_encoder, scaler, model
 
 one_hot,target_encoder, scaler, model = load_models()
 
-st.header("🔧 Características de la vivienda")
-col1, col2 = st.columns(2)
+st.header("Datos y características del empleado 🧔")
+col1, col2 ,col3= st.columns(3)
 
 with col1:
-    propertyType = st.selectbox("Tipo de vivienda", ["flat", "penthouse", "studio", "duplex", 'chalet', 'countryHouse'], help="Selecciona el tipo de propiedad de la casa.")
-    size = st.slider('Tamaño del Piso', 20,149,50, help='Elige el tamaño ideal para ti') #min,max,predeterminado
-    exterior = st.selectbox("Exterior", ["True", "False"], help="Elige si tiene vista a la calle.")
-    rooms = st.number_input("Habitaciones", min_value=0,max_value=4 , value=1, step=1, help="Elige un número de habitaciones entre 0 y 4.")
-    bathrooms = st.number_input("Baños", min_value=1, max_value=3, value=1, step=1, help="Elige cuántos baños tiene.")
-    province= st.selectbox("Provincia", ["Madrid", "Afueras"])
-    municipality= st.selectbox("Municipio", ['Madrid', 'San Sebastián de los Reyes', 'Villamanrique de Tajo',
-       'Recas', 'Cedillo del Condado', 'Rascafría', 'Manzanares el Real',
-       'Miraflores de la Sierra', 'El Viso de San Juan', 'Galapagar',
-       'Arganda', 'San Lorenzo de el Escorial', 'Camarena', 'Aranjuez',
-       'Villanueva del Pardillo', 'Azuqueca de Henares', 'El Espinar',
-       'Las Rozas de Madrid', 'Guadalajara', 'Illescas', 'Navalcarnero',
-       'Seseña', 'Casarrubios del Monte', 'Alcalá de Henares',
-       'El Escorial', 'Calypo Fado', 'Leganés', 'Coslada',
-       'Torrejón de Ardoz', 'Marchamalo', 'Camarma de Esteruelas',
-       'Alcorcón', 'Pinto', 'Valdemoro', 'Collado Villalba', 'Getafe',
-       'Paracuellos de Jarama', 'El Molar', 'Parla', 'Tres Cantos',
-       'Yuncos', 'Esquivias', 'Quijorna', 'Valdemorillo', 'Yuncler',
-       'Pedrezuela', 'Daganzo de Arriba', 'Yeles', 'Guadarrama', 'Ocaña',
-       'Cobeña', 'El Álamo', 'Algete', 'El Casar', 'Rivas-Vaciamadrid',
-       'Los Santos de la Humosa', 'San Fernando de Henares',
-       'Aldea del Fresno', 'Fuenlabrada', 'Fuensalida', 'Mataelpino',
-       'Villa del Prado', 'Los Molinos', 'Colmenar Viejo', 'Móstoles',
-       'Borox', 'Navalafuente', 'Robledo de Chavela', 'Campo Real',
-       'Villaviciosa de Odón', 'Mocejón', 'San Ildefonso o la Granja',
-       'Alameda de la Sagra', 'Cabañas de la Sagra',
-       'Las Navas del Marqués', 'Villaseca de la Sagra',
-       'Pozuelo de Alarcón', 'Yebes', 'Bustarviejo', 'Collado Mediano',
-       'Chinchón', 'Valmojado', 'Alovera', 'Colmenarejo', 'Loeches',
-       'Sevilla la Nueva', 'Serranillos del Valle',
-       'Las Ventas de Retamosa', 'Torrelaguna', 'Villalbilla',
-       'Alcobendas'])
+    Age = st.number_input("Edad", min_value=18,max_value=60 , value=40, step=1, help="Elige la edad del trabajador entre 18 y 60")
+    Education = st.selectbox("Educación", ['Below College', 'College', 'Bachelor', 'Master', 'Doctor'], help="Elige la educación del trabajador")
+    EducationField= st.selectbox("Campo de Estudio", ['Life Sciences', 'Other', 'Medical', 'Marketing','Technical Degree', 'Human Resources'])
+    Gender= st.selectbox("Género", ['Female', 'Male'])
+    MaritalStatus = st.selectbox("Estado civil", ['Married', 'Single', 'Divorced'], help="Elige el estado civil del empleado")
+    NumCompaniesWorked = st.selectbox('Número de compañías', [0,1,2,3,4,5,6,7,8,9], help="Elige el numero de compañías donde el empleado ha trabajado")
+    TotalWorkingYears= st.selectbox('Años trabajados',[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+                                                       21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40])
+
 
 with col2:
-    distance = st.slider("Distancia del Centro", 183,59919,1000,help="Elige tu distancia deseada del Centro.")
-    status = st.selectbox('Condición del piso', ['good', 'desconocido', 'newdevelopment', 'renew'], help='Elije las condiciones de tu nuevo piso') #cambiar desconocido
-    floor = st.selectbox("Piso", ["ss", "st", 'bj', 'en', 'desconocido', '1','2', '3', '4', '5', '6', '7', '8', '14'], help="Elige si tiene vista a la calle.")
-    district= st.selectbox("Distrito",['Hortaleza', 'Centro Urbano', 'desconocido', 'Puente de Vallecas',
-       'Ciudad Lineal', 'Casco Antiguo', 'Moncloa', 'Centro',
-       'Centro - Casco Histórico', 'Retiro', 'Arganzuela', 'Latina',
-       'Barrio de Salamanca', 'Bulevar - Plaza Castilla', 'La Estación',
-       'Barajas', 'Las Matas- Peñascales',
-       'San Roque-Concordia-Adoratrices', 'Chamberí', 'Villaverde',
-       'La Dehesa - El Pinar', 'Seseña Nuevo', 'Reyes Católicos',
-       'Chorrillo', 'Valdepelayo - Montepinos - Arroyo Culebro',
-       'Valleaguado - La Cañada', 'Suroeste',
-       'San Isidro - Los Almendros', 'San José - Buenos Aires',
-       'Hospital', 'Parque de la Coruña - Las Suertes',
-       'Valderas - Los Castillos', 'Getafe Centro', 'San Blas', 'Val',
-       'Casco Urbano', 'Casco Histórico', 'Los Llanos - Valle Pardo',
-       'Ensanche', 'Dehesa - El Soto', 'El Vallejo', 'Pintores-Ferial',
-       'Carabanchel', 'Zona Estación- Centro', 'Tetuán', 'El Quiñón',
-       'Constitución-El Balconcillo', 'Valdemorillo pueblo',
-       'Señorío de Illescas', 'Nuevo Aranjuez-Ciudad de las Artes',
-       'Vega de la Moraleja', 'Villa de Vallecas', 'Fuencarral',
-       'Noroeste', 'Fuentebella-San Felix-El Leguario', 'Rivas Futura',
-       'Reyes', 'Parque Roma - Coronas', 'Parque Europa - Los Pitufos',
-       'Vicálvaro', 'La Alhóndiga', 'Villalba Estación', 'Usera',
-       'Zona Estación', 'Sudeste Industrial', 'Juan de Austria',
-       'Montserrat - Parque Empresarial', 'Zona Industrial', 'Espartales',
-       'Parque Inlasa', 'Universidad', 'Las Américas',
-       'San Crispín - La Estación Consorcio', 'Foso-Moreras',
-       'Getafe norte', 'Parla Este', 'Villayuventus-Renfe', 'Carlos Ruiz',
-       'El Espinar', 'Chamartín', 'El Nido-Las Fuentes',
-       'El Mirador - Grillero', 'La Espinilla - Parque Blanco',
-       'Zona Pueblo', 'Los Ángeles de San Rafael', 'Ciudad 70',
-       'Buenavista', 'Las Sedas - El Olivar', 'Las Cañas',
-       'Las Lomas-Salinera-La Muñeca', 'El Mirador',
-       'Pol. Industrial sur', 'Parque - Ctra de Ugena', 'San Isidro',
-       'Pryconsa - Poligono Europa', 'Alcobendas Centro','desconocido'])
-    hasLift = st.selectbox('Tiene ascensor', ['True', 'False', 'desconocido'])
-    parkingSpace= st.selectbox('Tiene plaza de garaje', ['True', 'False', 'desconocido'])
+    JobLevel = st.selectbox("Nivel del puesto", ['Intern', 'Junior', 'Senior', 'Manager', 'Head'],help="Elige el nivel del puesto del empleado")
+    JobRole = st.selectbox('Rol', ['Healthcare Representative', 'Research Scientist','Sales Executive', 'Human Resources', 'Research Director','Laboratory Technician', 'Manufacturing Director','Sales Representative', 'Manager'], help='Elije el rol del empleado')
+    BusinessTravel = st.selectbox('Frecuencia de viaje', ['Travel_Rarely', 'Travel_Frequently', 'Non-Travel'], help='Elige la frecuencia de viaje del trabajador') #min,max,predeterminado
+    Department = st.selectbox("Departamento", ['Sales', 'Research & Development', 'Human Resources'], help="Elige el departamento del trabajador")
+    DistanceFromHome = st.selectbox("Distancia de casa al trabajo", ['entre 1 y 4',  'entre 5 y 8', 'entre 9 y 12','entre 13 y 18', 'entre 19 y 23', 'entre 24 y 29'], help="Eligela distancia a casa del trabajador")
+    MonthlyIncome= st.slider("Salario mensual",114,2260,500 )
+    PercentSalaryHike= st.slider('Porcentaje de subida de salario', 11,25,15)
+    StockOptionLevel= st.selectbox('Nivel de reparto de acciones', ['Bad', 'Good', 'Better', 'Best'])
+    
+with col3:
+    TrainingTimesLastYear= st.number_input('Número de formaciones en el último año', min_value=0,max_value=6 , value=1, step=1)
+    YearsAtCompany= st.slider('Años en la compañía actual', 0,40,15)
+    YearsSinceLastPromotion= st.number_input('Años desde la última promoción', min_value=0,max_value=15 , value=1, step=1)
+    EnvironmentSatisfaction= st.selectbox('Nivel de satisfacción con el entorno', ['Low','Medium','High', 'Very High' ])
+    JobSatisfaction= st.selectbox('Nivel de satisfacción en el trabajo', ['Low','Medium','High', 'Very High' ])
+    WorkLifeBalance= st.selectbox('Nivel de satisfacción con el balance vida-trabajo', ['Bad', 'Good', 'Better', 'Best'])
+    JobInvolvement= st.selectbox('Nivel de implicación en el trabajo', ['Low','Medium','High', 'Very High' ])
+
 
 
 
 
 # Botón para realizar la predicción
-if st.button("💡 Predecir Precio"):
+if st.button("Predecir si el empleado se va 🤞"):
     # Crear DataFrame con los datos ingresados    #Comprobar que sean las mismas que la mía y el mismo orden
-    new_house = pd.DataFrame({
-        'propertyType': [propertyType],
-        'size': [size],
-        'exterior': [str(exterior)],
-        'rooms': [str(rooms)],
-        'bathrooms': [str(bathrooms)],
-        'province' : [str(province)],
-        'municipality' : [str(municipality)],
-        'distance': [int(distance)],
-        'status': [str(status)],
-        'floor': [str(floor)],
-        'district': [str(district)],
-        'hasLift': [str(hasLift)],
-        'parkingSpace': [str(parkingSpace)]
+    new_employee = pd.DataFrame({
+        'Age': [Age],
+        'BusinessTravel': [str(BusinessTravel)],
+        'Department': [str(Department)],
+        'DistanceFromHome': [str(DistanceFromHome)],
+        'Education': [str(Education)],
+        'EducationField' : [str(EducationField)],
+        'Gender' : [str(Gender)],
+        'JobLevel': [str(JobLevel)],
+        'JobRole': [str(JobRole)],
+        'MaritalStatus': [str(MaritalStatus)],
+        'MonthlyIncome': [MonthlyIncome],
+        'NumCompaniesWorked': [str(NumCompaniesWorked)],
+        'PercentSalaryHike': [PercentSalaryHike],
+        'StockOptionLevel': [str(StockOptionLevel)],
+        'TotalWorkingYears': [str(TotalWorkingYears)],
+        'TrainingTimesLastYear': [TrainingTimesLastYear],
+        'YearsAtCompany': [YearsAtCompany],
+        'YearsSinceLastPromotion': [YearsSinceLastPromotion],
+        'EnvironmentSatisfaction' : [str(EnvironmentSatisfaction)],
+        'JobSatisfaction' : [str(JobSatisfaction)],
+        'WorkLifeBalance': [str(WorkLifeBalance)],
+        'JobInvolvement': [str(JobInvolvement)]       
     })
   
-    new_house=pd.DataFrame(new_house)
+    new_employee=pd.DataFrame(new_employee)
     
-    col_encode = ["propertyType", "exterior", "rooms", "status", "floor", "hasLift", "parkingSpace"]
-    onehot = one_hot.transform(new_house[col_encode])
+    col_encode = ["Gender", "DistanceFromHome", "Education", "JobLevel", "StockOptionLevel", "JobRole", "TrainingTimesLastYear", "JobInvolvement"]
+    onehot = one_hot.transform(new_employee[col_encode])
     # Obtenemos los nombres de las columnas del codificador
     column_names = one_hot.get_feature_names_out(col_encode)
     # Convertimos a un DataFrame
@@ -174,16 +140,16 @@ if st.button("💡 Predecir Precio"):
     
              #Añadir el Onehot
     # Codificación de las columnas categóricas
-    new_house.drop(columns = col_encode,inplace=True)
-    new_house_encoded = pd.concat([new_house, onehot_df], axis=1)
+    new_employee.drop(columns = col_encode,inplace=True)
+    new_employee_encoded = pd.concat([new_employee, onehot_df], axis=1)
     #new_house_encoded.drop(columns=col_encode,inplace=True)
     # new_house_encoded = pd.DataFrame()
-    new_house_encoded["price"] = np.nan
-    new_house_encoded = target_encoder.transform(new_house_encoded)
+    new_employee_encoded["Attrition"] = np.nan
+    new_employee_encoded = target_encoder.transform(new_employee_encoded)
     
 
-    new_house_encoded2=new_house_encoded.copy()
-    new_house_encoded3=new_house_encoded.copy()
+    new_employee_encoded2=new_employee_encoded.copy()
+    new_employee_encoded3=new_employee_encoded.copy()
     # One-Hot Encoding
     # Hacemos el OneHot Encoder
 
@@ -199,19 +165,26 @@ if st.button("💡 Predecir Precio"):
 
     # # Combina los datos codificados
     # new_house_encoded = pd.concat([new_house_encoded, encoded_target], axis=1)
-
+    
     # Filtra las columnas numéricas y escala
-    new_house_encoded2.drop(columns="price", inplace=True)
-    new_house_encoded = scaler.transform(new_house_encoded2)
-    new_house_encoded = pd.DataFrame(new_house_encoded)
+    new_employee_encoded2.drop(columns="Attrition", inplace=True)
+    new_employee_encoded = scaler.transform(new_employee_encoded2)
+    new_employee_encoded = pd.DataFrame(new_employee_encoded)
     # new_house_encoded.drop(columns=6,inplace=True)
-    new_house_encoded3["price"]=new_house_encoded[6]   #EL DATA FRAME AL PASAR POR EL SCALER NO PUEDE TENER PRICE PERO EN EL MODLEO SI QUE TIENE QUE ESTAR PRICE
+    new_employee_encoded3["Attrition"]=new_employee_encoded[6]   #EL DATA FRAME AL PASAR POR EL SCALER NO PUEDE TENER PRICE PERO EN EL MODLEO SI QUE TIENE QUE ESTAR PRICE
     
     # Realizar la predicción
-    prediction = model.predict(new_house_encoded)[0]
+    prediction = model.predict(new_employee_encoded)[0]
+    if prediction ==0:
+        pred="No se irá de la empresa"
+    else:
+        pred="Se irá de la empresa"
+    # dicc_pred={0:"No se irá de la empresa",
+    #            1:"Se irá de la empresa"}
+    # prediction_encoded=prediction.map(dicc_pred)
     # y_pred=modelo_final.predict(x)
     # Mostrar el resultado
-    st.success(f"💵 El precio estimado del alquiler de la casa es: ${prediction}")
+    st.success(f"El empleado que has consultado {pred}")
     st.balloons()
 
 st.markdown(
