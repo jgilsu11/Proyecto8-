@@ -178,14 +178,18 @@ if st.button("Predecir si el empleado se va 🤞"):
     if prediction ==0:
         pred="No se irá de la empresa"
     else:
-        pred="Se irá de la empresa"
+        pred="Se irá de la empresa :("
     # dicc_pred={0:"No se irá de la empresa",
     #            1:"Se irá de la empresa"}
     # prediction_encoded=prediction.map(dicc_pred)
     # y_pred=modelo_final.predict(x)
     # Mostrar el resultado
     st.success(f"El empleado que has consultado {pred}")
-    st.balloons()
+    if pred=="No se irá de la empresa":
+        st.balloons()
+    else:
+        pass
+    
 
 st.markdown(
     """
