@@ -16,7 +16,7 @@ st.write("Usa esta aplicación para predecir la probabilidad de partida de un em
 
 # Mostrar una imagen
 st.image(
-    "Proyecto 8\\Proyecto8-Predicci-n-de-Retenci-n-de-Empleados\\Imagen\\imagen_oficina.webp",  # URL de la imagen
+    "Imagen\\imagen_oficina.webp",  # URL de la imagen
     caption="Retén a tus empleados.",
     use_column_width=True,
 )
