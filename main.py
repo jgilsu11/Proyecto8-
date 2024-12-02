@@ -2,9 +2,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import numpy as np
-from category_encoders import TargetEncoder
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
+
 
 st.set_page_config(
     page_title="Predicción de la probabilidad de partida de un empleado",
