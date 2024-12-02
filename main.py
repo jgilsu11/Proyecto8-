@@ -40,6 +40,7 @@ st.header("Datos y características del empleado 🧔")
 col1, col2 ,col3= st.columns(3)
 
 with col1:
+    st.markdown("#### Características Empleado")
     Age = st.number_input("Edad", min_value=18,max_value=60 , value=40, step=1, help="Elige la edad del trabajador entre 18 y 60")
     Education = st.selectbox("Educación", ['Below College', 'College', 'Bachelor', 'Master', 'Doctor'], help="Elige la educación del trabajador")
     EducationField= st.selectbox("Campo de Estudio", ['Life Sciences', 'Other', 'Medical', 'Marketing','Technical Degree', 'Human Resources'])
@@ -51,6 +52,7 @@ with col1:
 
 
 with col2:
+    st.markdown("#### Características en la Empresa")
     JobLevel = st.selectbox("Nivel del puesto", ['Intern', 'Junior', 'Senior', 'Manager', 'Head'],help="Elige el nivel del puesto del empleado")
     JobRole = st.selectbox('Rol', ['Healthcare Representative', 'Research Scientist','Sales Executive', 'Human Resources', 'Research Director','Laboratory Technician', 'Manufacturing Director','Sales Representative', 'Manager'], help='Elije el rol del empleado')
     BusinessTravel = st.selectbox('Frecuencia de viaje', ['Travel_Rarely', 'Travel_Frequently', 'Non-Travel'], help='Elige la frecuencia de viaje del trabajador') #min,max,predeterminado
@@ -59,8 +61,9 @@ with col2:
     MonthlyIncome= st.slider("Salario mensual",114,2260,500 )
     PercentSalaryHike= st.slider('Porcentaje de subida de salario', 11,25,15)
     StockOptionLevel= st.selectbox('Nivel de reparto de acciones', ['Bad', 'Good', 'Better', 'Best'])
-    
+
 with col3:
+    st.markdown("#### Encuestas")
     TrainingTimesLastYear= st.number_input('Número de formaciones en el último año', min_value=0,max_value=6 , value=1, step=1)
     YearsAtCompany= st.slider('Años en la compañía actual', 0,40,15)
     YearsSinceLastPromotion= st.number_input('Años desde la última promoción', min_value=0,max_value=15 , value=1, step=1)
